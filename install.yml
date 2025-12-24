@@ -171,6 +171,22 @@ postman: [snapd]
 
 spotify: [snapd]
 
+duckstation:
+  - type: file
+    url: https://github.com/stenzek/duckstation/releases/download/latest/DuckStation-x64.AppImage
+    destination: ~/.local/bin/DuckStation-x64.AppImage
+    post_install:
+      - type: tee
+        destination: ~/.local/share/applications/DuckStation-x64.desktop
+        content: >
+          [Desktop Entry]
+          Name=DuckStation
+          StartupNotify=true
+          Type=Application
+          Terminal=false
+          Categories=Utilities;
+          Exec=DuckStation-x64.AppImage
+
 # Type pip translates into:
 # pip install -U {{...packages}}
 
