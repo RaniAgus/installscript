@@ -1,3 +1,1 @@
 htop: [dnf, apt]
-
-jq: [dnf, apt]

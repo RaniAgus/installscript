@@ -56,6 +56,9 @@ def load_package(name: str, config: list[dict], platform: str) -> list[Package]:
     package_list: list[Package] = []
 
     for item in config:
+        if isinstance(item, str):
+            item = {'type': item}
+
         if item.get('type') == 'dnf':
             for pkg in create_dnf_package(name, item, platform):
                 package_list.append(pkg)
