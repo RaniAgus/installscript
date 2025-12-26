@@ -1,7 +1,3 @@
 htop:
   - type: dnf
   - type: apt
-
-jq:
-  - type: dnf
-  - type: apt

@@ -36,30 +36,32 @@ class AptPackage(Package):
       return f"sudo apt-get install -y {' '.join(self.packages)}"
 
 
-def create_dnf_package(item: dict, platform: str) -> list[DnfPackage]:
+def create_dnf_package(name: str, item: dict, platform: str) -> list[DnfPackage]:
     if platform not in ['fedora', 'centos', 'rhel']:
         return []
 
-    return [DnfPackage(packages=item['packages'])]
+    packages = item['packages'] if 'packages' in item else [name]
+    return [DnfPackage(packages=packages)]
 
 
-def create_apt_package(item: dict, platform: str) -> list[AptPackage]:
+def create_apt_package(name: str, item: dict, platform: str) -> list[AptPackage]:
     if platform not in ['ubuntu', 'debian']:
         return []
 
-    return [AptPackage(packages=item['packages'])]
+    packages = item['packages'] if 'packages' in item else [name]
+    return [AptPackage(packages=packages)]
 
 
-def load_package(config: list[dict], platform: str) -> list[Package]:
+def load_package(name: str, config: list[dict], platform: str) -> list[Package]:
     package_list: list[Package] = []
 
     for item in config:
         if item.get('type') == 'dnf':
-            for pkg in create_dnf_package(item, platform):
+            for pkg in create_dnf_package(name, item, platform):
                 package_list.append(pkg)
 
         elif item.get('type') == 'apt':
-            for pkg in create_apt_package(item, platform):
+            for pkg in create_apt_package(name, item, platform):
                 package_list.append(pkg)
 
         if len(package_list) > 0:
@@ -72,7 +74,7 @@ def load_packages(config: dict, platform: str) -> dict[str, list[Package]]:
     packages: dict[str, list[Package]] = {}
 
     for name, pkg_list in config.items():
-        packages[name] = load_package(pkg_list, platform)
+        packages[name] = load_package(name, pkg_list, platform)
 
     return packages
 
