@@ -284,6 +284,8 @@ steam:
 virtualbox:
   - type: dnf
     packages: [VirtualBox-7.2]
+    pre_install: |
+      wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo rpm --import -
     depends_on:
       - type: dnf
         packages:
