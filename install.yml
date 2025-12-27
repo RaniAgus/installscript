@@ -184,7 +184,7 @@ duckstation:
     post_install:
       - type: tee
         destination: ~/.local/share/applications/DuckStation-x64.desktop
-        content: >
+        content: |
           [Desktop Entry]
           Name=DuckStation
           StartupNotify=true
