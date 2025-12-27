@@ -14,12 +14,12 @@ import argparse
 import sys
 import yaml
 
-@dataclass
+@dataclass(frozen=True)
 class Package(ABC):
-    pre_install: list[Command] = field(default_factory=list)
-    post_install: list[Command] = field(default_factory=list)
-    flags: list[str] = field(default_factory=list)
-    dependencies: list[str] = field(default_factory=list)
+    pre_install: tuple[Command, ...] = field(default_factory=tuple)
+    post_install: tuple[Command, ...] = field(default_factory=tuple)
+    flags: tuple[str, ...] = field(default_factory=tuple)
+    dependencies: tuple[str, ...] = field(default_factory=tuple)
 
     def print(self) -> str:
         result = ""
@@ -41,38 +41,45 @@ class Package(ABC):
     def print_package(self) -> str:
         pass
 
-@dataclass
+    def resolve(self, all_packages: dict[str, list[Package]]) -> list[Package]:
+        return [self]
+
+
+@dataclass(frozen=True)
 class DnfPackage(Package):
-  packages: list[str] = field(default_factory=list)
+    packages: tuple[str, ...] = field(default_factory=tuple)
 
-  def print_package(self) -> str:
-      return f"sudo dnf install -y {' '.join(self.packages)} {' '.join(self.flags)}".strip()
+    def print_package(self) -> str:
+        return f"sudo dnf install -y {' '.join(self.packages)} {' '.join(self.flags)}".strip()
 
 
-@dataclass
+@dataclass(frozen=True)
 class AptPackage(Package):
-  packages: list[str] = field(default_factory=list)
+    packages: tuple[str, ...] = field(default_factory=tuple)
 
-  def print_package(self) -> str:
-      return f"sudo apt-get install -y {' '.join(self.packages)} {' '.join(self.flags)}".strip()
+    def print_package(self) -> str:
+        return f"sudo apt-get install -y {' '.join(self.packages)} {' '.join(self.flags)}".strip()
 
 
-@dataclass
+@dataclass(frozen=True)
 class UndefinedPackage(Package):
     name: str = field(default="undefined")
 
     def print_package(self) -> str:
         return f"# TODO: Add installation command for package: {self.name}"
 
+    def resolve(self, all_packages: dict[str, list[Package]]) -> list[Package]:
+        return all_packages.get(self.name, super().resolve(all_packages))
 
-@dataclass
+
+@dataclass(frozen=True)
 class Command:
     @abstractmethod
     def print(self) -> str:
         pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class ShellCommand(Command):
     command: str
 
@@ -80,7 +87,7 @@ class ShellCommand(Command):
         return self.command
 
 
-@dataclass
+@dataclass(frozen=True)
 class TeeCommand(Command):
     content: str
     destination: str
@@ -157,11 +164,11 @@ def create_dnf_package(name: str, item: dict, platform: str) -> list[DnfPackage]
     return [
         *deps.values(),
         DnfPackage(
-            packages=packages,
-            pre_install=pre_install,
-            post_install=post_install,
-            flags=flags,
-            dependencies=list(deps.keys()),
+            packages=tuple(packages),
+            pre_install=tuple(pre_install),
+            post_install=tuple(post_install),
+            flags=tuple(flags),
+            dependencies=tuple(deps.keys()),
         )
     ]
 
@@ -177,11 +184,11 @@ def create_apt_package(name: str, item: dict, platform: str) -> list[AptPackage]
     return [
         *deps.values(),
         AptPackage(
-            packages=packages,
-            pre_install=pre_install,
-            post_install=post_install,
-            flags=flags,
-            dependencies=list(deps.keys()),
+            packages=tuple(packages),
+            pre_install=tuple(pre_install),
+            post_install=tuple(post_install),
+            flags=tuple(flags),
+            dependencies=tuple(deps.keys()),
         )
     ]
 
@@ -236,38 +243,47 @@ def load_packages(config: dict, platform: str) -> dict[str, list[Package]]:
     return packages
 
 
-def load_config(file_path: str, platform: str) -> dict[str, list[Package]]:
-    with open(file_path, 'r') as file:
-        config = yaml.safe_load(file)
+def sort_packages(packages: dict[str, list[Package]]) -> list[Package]:
+    sorted_packages: list[Package] = []
+    seen: set[Package] = set()
 
-    return load_packages(config, platform)
+    for pkg_list in packages.values():
+        for pkg in pkg_list:
+            for resolved in pkg.resolve(packages):
+                if resolved not in seen:
+                    seen.add(resolved)
+                    sorted_packages.append(resolved)
+
+    return sorted_packages
 
 
 def main(args: argparse.Namespace) -> None:
     """
     Usage: installscript.py <config.yaml> --os <os_name> [--out <output.sh>]
     """
-    packages = load_config(args.config, args.os)
+    with open(args.config_path, 'r') as file:
+        config = yaml.safe_load(file)
 
-    script_content = "#!/bin/bash\n\n"
+        packages = load_packages(config, args.os)
 
-    for _, pkgs in packages.items():
-        for pkg in pkgs:
+        script_content = "#!/bin/bash\n\n"
+
+        for pkg in sort_packages(packages):
             script_content += pkg.print() + "\n"
 
-    while script_content.endswith('\n'):
-        script_content = script_content[:-1]  # Remove the last extra newline
+        while script_content.endswith('\n'):
+            script_content = script_content[:-1]  # Remove the last extra newline
 
-    if args.out:
-        with open(args.out, 'w') as outfile:
-            outfile.write(script_content)
-    else:
-        print(script_content)
+        if args.out:
+            with open(args.out, 'w') as outfile:
+                outfile.write(script_content)
+        else:
+            print(script_content)
 
 
 if __name__ == "__main__":
     args_parser = argparse.ArgumentParser(description="Generate installation scripts from YAML config.")
-    args_parser.add_argument("config", help="Path to the YAML configuration file.")
+    args_parser.add_argument("config_path", help="Path to the YAML configuration file.")
     args_parser.add_argument("--os", required=True, help="Target operating system (e.g., 'ubuntu', 'fedora').")
     args_parser.add_argument("--out", help="Output shell script file path (optional, defaults to stdout).")
     args = args_parser.parse_args(sys.argv[1:])

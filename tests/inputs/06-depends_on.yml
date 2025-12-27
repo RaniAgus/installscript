@@ -1,5 +1,3 @@
-dnf5-plugins: [dnf]
-
 virtualbox:
   - type: dnf
     packages: [VirtualBox-7.2]
@@ -7,6 +5,7 @@ virtualbox:
       wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo rpm --import -
     depends_on:
       - dnf5-plugins
+      - dnf-automatic
       - type: dnf
         packages:
           - kernel
@@ -18,3 +17,5 @@ virtualbox:
           - kernel-tools-libs
           - kernel-headers
           - kernel-devel
+
+dnf5-plugins: [dnf]

@@ -2,7 +2,7 @@
 
 sudo dnf install -y dnf5-plugins
 
-# TODO: Add installation command for package: dnf5-plugins
+# TODO: Add installation command for package: dnf-automatic
 
 sudo dnf install -y kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-tools kernel-tools-libs kernel-headers kernel-devel
 
