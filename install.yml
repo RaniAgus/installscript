@@ -164,8 +164,7 @@ drawing:
 
 code:
   - type: snapd
-    flags:
-      - "--classic"
+    classic: true
 
 vlc: [snapd]
 

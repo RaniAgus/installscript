@@ -1,0 +1,15 @@
+snapd:
+  - apt
+  - type: dnf
+    post_install: |
+      sudo ln -s /var/lib/snapd/snap /snap
+
+code:
+  - type: snapd
+    classic: true
+
+vlc: [snapd]
+
+postman: [snapd]
+
+spotify: [snapd]

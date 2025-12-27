@@ -29,11 +29,8 @@ class Package(ABC):
 
         result += self.print_package() + "\n"
 
-        if len(self.post_install) > 0:
-            result += "\n"
-
         for cmd in self.post_install:
-            result += f"{cmd.print()}\n"
+            result += f"\n{cmd.print()}"
 
         return result
 
@@ -59,6 +56,14 @@ class AptPackage(Package):
 
     def print_package(self) -> str:
         return f"sudo apt-get install -y {' '.join(self.packages)} {' '.join(self.flags)}".strip()
+
+
+@dataclass(frozen=True)
+class SnapPackage(Package):
+    packages: tuple[str, ...] = field(default_factory=tuple)
+
+    def print_package(self) -> str:
+        return f"sudo snap install {' '.join(self.packages)} {' '.join(self.flags)}".strip()
 
 
 @dataclass(frozen=True)
@@ -193,6 +198,31 @@ def create_apt_package(name: str, item: dict, platform: str) -> list[AptPackage]
     ]
 
 
+def create_snapd_package(name: str, item: dict, platform: str) -> list[Package]:
+    if platform not in ['ubuntu', 'debian', 'fedora', 'centos', 'rhel']:
+        return []
+
+    packages = create_packages_list(item, name)
+    pre_install, post_install, deps = create_common_package_fields(name, item, platform)
+    flags = item.get('flags', [])
+
+    if 'classic' in item and item['classic']:
+        flags.append('--classic')
+
+    deps['snapd'] = UndefinedPackage(name='snapd')
+
+    return [
+        *deps.values(),
+        SnapPackage(
+            packages=tuple(packages),
+            pre_install=tuple(pre_install),
+            post_install=tuple(post_install),
+            flags=tuple(flags),
+            dependencies=tuple(deps.keys()),
+        )
+    ]
+
+
 def load_package(name: str, item: dict, platform: str) -> list[Package]:
     package_list: list[Package] = []
 
@@ -202,6 +232,10 @@ def load_package(name: str, item: dict, platform: str) -> list[Package]:
 
     elif item.get('type') == 'apt':
         for pkg in create_apt_package(name, item, platform):
+            package_list.append(pkg)
+
+    elif item.get('type') == 'snapd':
+        for pkg in create_snapd_package(name, item, platform):
             package_list.append(pkg)
 
     return package_list
