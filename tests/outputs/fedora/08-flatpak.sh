@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 flatpak install -y flathub org.kde.kdenlive
 
 flatpak install -y flathub net.pcsx2.PCSX2

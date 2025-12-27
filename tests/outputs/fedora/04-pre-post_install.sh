@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 echo "Preparing to install htop dnf package..."
 
 sudo dnf install -y htop

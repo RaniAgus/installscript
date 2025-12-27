@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 sudo dnf install -y python3-pip
 
 sudo dnf install -y make cmake gcc gcc-c++

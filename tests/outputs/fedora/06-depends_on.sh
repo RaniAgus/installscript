@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 sudo dnf install -y dnf5-plugins
 
 # TODO: Add installation command for package: dnf-automatic

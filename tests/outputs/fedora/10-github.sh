@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 TMP_DIR=$(mktemp -d)
 git clone https://github.com/mumuki/cspec.git $TMP_DIR
 (

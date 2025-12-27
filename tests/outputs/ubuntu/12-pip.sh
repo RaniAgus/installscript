@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 sudo apt-get install -y python3-pip
 
 sudo apt-get install -y build-essential

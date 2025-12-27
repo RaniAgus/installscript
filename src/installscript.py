@@ -552,6 +552,8 @@ def main(args: argparse.Namespace) -> None:
         lines = [
             "#!/bin/bash",
             "",
+            "set -e",
+            "",
             *(pkg.print() for pkg in sort_packages(packages))
         ]
 

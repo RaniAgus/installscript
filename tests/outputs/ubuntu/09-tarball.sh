@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 curl -fsSL "https://go.dev/dl/$(curl -fsSL 'https://golang.org/VERSION?m=text' | head -n1).linux-amd64.tar.gz" | sudo tar xzvC /usr/local
 
 sudo apt-get install -y jq

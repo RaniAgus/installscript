@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 bash -c "$(curl -fsSL "https://sh.rustup.rs")"
 
 sudo apt-get install -y zsh

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 echo "Preparing to install htop apt package..."
 
 sudo apt-get install -y htop
