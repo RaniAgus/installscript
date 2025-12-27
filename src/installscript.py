@@ -49,6 +49,18 @@ def load_packages(config: dict, platform: str) -> dict[str, list[Package]]:
     }
 
 
+def load_package_list(name: str, config: list[dict], platform: str) -> list[Package]:
+    return [
+        pkg
+        for item in config
+        for pkg in Package.create(
+            name,
+            item if isinstance(item, dict) else {"type": item},
+            platform,
+        )
+    ]
+
+
 def sort_packages(packages: dict[str, list[Package]]) -> list[Package]:
     seen: set[Package] = set()
     return [
@@ -58,6 +70,9 @@ def sort_packages(packages: dict[str, list[Package]]) -> list[Package]:
         for resolved in pkg.resolve(packages)
         if resolved not in seen and seen.add(resolved) is None
     ]
+
+
+### Package Implementations ###
 
 
 @dataclass(frozen=True)
@@ -459,6 +474,42 @@ class UndefinedPackage(Package):
         return all_packages.get(self.name, super().resolve(all_packages))
 
 
+## Package Helpers ###
+
+
+def create_common_package_fields(name: str, item: dict, platform: str) -> tuple[list[Command], list[Command], dict[str, Package]]:
+    pre_install = create_install_commands(item.get('pre_install', []))
+    post_install = create_install_commands(item.get('post_install', []))
+    deps = load_dependencies(name, item.get('depends_on', []), platform)
+    return pre_install, post_install, deps
+
+
+def create_install_commands(commands: list | dict | str) -> list[str]:
+    return [
+        Command.create(
+            command if isinstance(command, dict)
+            else {'type': 'shell', 'command': command}
+        )
+        for command in (commands if isinstance(commands, list) else [commands])
+    ]
+
+
+def load_dependencies(name: str, config: list[dict], platform: str) -> dict[str, Package]:
+    deps: dict[str, Package] = {}
+
+    for i, item in enumerate(config):
+        if isinstance(item, str):
+            deps[item] = UndefinedPackage(name=item)
+            continue
+
+        for j, pkg in enumerate(Package.create(name, item, platform)):
+            deps[f"__{name}_{i}_{j}"] = pkg
+
+    return deps
+
+
+## Command Implementations ###
+
 @dataclass(frozen=True)
 class Command:
     factories = {}
@@ -515,56 +566,6 @@ def create_packages_list(item: dict, default: str) -> list[str]:
         return item['packages']
     else:
         return [default]
-
-
-def create_common_package_fields(name: str, item: dict, platform: str) -> tuple[list[Command], list[Command], dict[str, Package]]:
-    pre_install = create_install_commands(item.get('pre_install', []))
-    post_install = create_install_commands(item.get('post_install', []))
-    deps = load_dependencies(name, item.get('depends_on', []), platform)
-    return pre_install, post_install, deps
-
-
-def create_install_commands(commands: list | dict | str) -> list[str]:
-    return [
-        Command.create(
-            command if isinstance(command, dict)
-            else {'type': 'shell', 'command': command}
-        )
-        for command in (commands if isinstance(commands, list) else [commands])
-    ]
-
-
-def load_dependencies(name: str, config: list[dict], platform: str) -> dict[str, Package]:
-    deps: dict[str, Package] = {}
-
-    for i, item in enumerate(config):
-        if isinstance(item, str):
-            deps[item] = UndefinedPackage(name=item)
-            continue
-
-        for j, pkg in enumerate(load_package(name, item, platform)):
-            deps[f"__{name}_{i}_{j}"] = pkg
-
-    return deps
-
-
-def load_package_list(name: str, config: list[dict], platform: str) -> list[Package]:
-    return [
-        pkg
-        for item in config
-        for pkg in load_package(
-            name,
-            item if isinstance(item, dict) else {"type": item},
-            platform,
-        )
-    ]
-
-
-def load_package(name: str, item: dict, platform: str) -> list[Package]:
-    return [
-        pkg
-        for pkg in Package.create(name, item, platform)
-    ]
 
 
 if __name__ == "__main__":
