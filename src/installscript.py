@@ -14,6 +14,52 @@ import argparse
 import sys
 import yaml
 
+
+def main(args: argparse.Namespace) -> None:
+    """
+    Usage: installscript.py <config.yaml> --os <os_name> [--out <output.sh>]
+    """
+    with open(args.config_path, 'r') as file:
+        config = yaml.safe_load(file)
+
+        packages = load_packages(config, args.os)
+
+        lines = [
+            "#!/bin/bash",
+            "",
+            "set -e",
+            "",
+            *(pkg.print() for pkg in sort_packages(packages))
+        ]
+
+        script_content = "\n".join(lines).strip()
+
+        if args.out:
+            with open(args.out, 'w') as outfile:
+                outfile.write(script_content)
+        else:
+            print(script_content)
+
+
+def load_packages(config: dict, platform: str) -> dict[str, list[Package]]:
+    return {
+        name: load_package_list(name, pkg_list, platform)
+        for name, pkg_list in config.items()
+        if len(pkg_list) > 0
+    }
+
+
+def sort_packages(packages: dict[str, list[Package]]) -> list[Package]:
+    seen: set[Package] = set()
+    return [
+        resolved
+        for pkg_list in packages.values()
+        for pkg in pkg_list
+        for resolved in pkg.resolve(packages)
+        if resolved not in seen and seen.add(resolved) is None
+    ]
+
+
 @dataclass(frozen=True)
 class Package(ABC):
     factories = {}
@@ -471,16 +517,6 @@ def create_packages_list(item: dict, default: str) -> list[str]:
         return [default]
 
 
-def create_install_commands(commands: list | dict | str) -> list[str]:
-    return [
-        Command.create(
-            command if isinstance(command, dict)
-            else {'type': 'shell', 'command': command}
-        )
-        for command in (commands if isinstance(commands, list) else [commands])
-    ]
-
-
 def create_common_package_fields(name: str, item: dict, platform: str) -> tuple[list[Command], list[Command], dict[str, Package]]:
     pre_install = create_install_commands(item.get('pre_install', []))
     post_install = create_install_commands(item.get('post_install', []))
@@ -488,10 +524,13 @@ def create_common_package_fields(name: str, item: dict, platform: str) -> tuple[
     return pre_install, post_install, deps
 
 
-def load_package(name: str, item: dict, platform: str) -> list[Package]:
+def create_install_commands(commands: list | dict | str) -> list[str]:
     return [
-        pkg
-        for pkg in Package.create(name, item, platform)
+        Command.create(
+            command if isinstance(command, dict)
+            else {'type': 'shell', 'command': command}
+        )
+        for command in (commands if isinstance(commands, list) else [commands])
     ]
 
 
@@ -521,49 +560,11 @@ def load_package_list(name: str, config: list[dict], platform: str) -> list[Pack
     ]
 
 
-def load_packages(config: dict, platform: str) -> dict[str, list[Package]]:
-    return {
-        name: load_package_list(name, pkg_list, platform)
-        for name, pkg_list in config.items()
-        if len(pkg_list) > 0
-    }
-
-
-def sort_packages(packages: dict[str, list[Package]]) -> list[Package]:
-    seen: set[Package] = set()
+def load_package(name: str, item: dict, platform: str) -> list[Package]:
     return [
-        resolved
-        for pkg_list in packages.values()
-        for pkg in pkg_list
-        for resolved in pkg.resolve(packages)
-        if resolved not in seen and seen.add(resolved) is None
+        pkg
+        for pkg in Package.create(name, item, platform)
     ]
-
-
-def main(args: argparse.Namespace) -> None:
-    """
-    Usage: installscript.py <config.yaml> --os <os_name> [--out <output.sh>]
-    """
-    with open(args.config_path, 'r') as file:
-        config = yaml.safe_load(file)
-
-        packages = load_packages(config, args.os)
-
-        lines = [
-            "#!/bin/bash",
-            "",
-            "set -e",
-            "",
-            *(pkg.print() for pkg in sort_packages(packages))
-        ]
-
-        script_content = "\n".join(lines).strip()
-
-        if args.out:
-            with open(args.out, 'w') as outfile:
-                outfile.write(script_content)
-        else:
-            print(script_content)
 
 
 if __name__ == "__main__":
