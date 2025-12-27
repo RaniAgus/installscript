@@ -124,6 +124,40 @@ class AptPackage(Package, type='apt'):
 
 
 @dataclass(frozen=True)
+class DebPackage(Package, type='deb'):
+    packages: tuple[str, ...] = field(default_factory=tuple)
+
+    @classmethod
+    def create(cls, name: str, item: dict, platform: str) -> list[Package]:
+        if platform not in ['ubuntu', 'debian']:
+            return []
+
+        packages = create_packages_list(item, name)
+        pre_install, post_install, deps = create_common_package_fields(name, item, platform)
+        flags = item.get('flags', [])
+
+        return [
+            *deps.values(),
+            DebPackage(
+                packages=tuple(packages),
+                pre_install=tuple(pre_install),
+                post_install=tuple(post_install),
+                flags=tuple(flags),
+                dependencies=tuple(deps.keys()),
+            )
+        ]
+
+    def print_package(self) -> str:
+        lines = []
+        for pkg in self.packages:
+            lines.append(f"TMP_FILE=$(mktemp)")
+            lines.append(f"wget -O $TMP_FILE {pkg}")
+            lines.append(f"sudo apt-get install -y $TMP_FILE {' '.join(self.flags)}")
+            lines.append(f"rm $TMP_FILE")
+        return "\n".join(lines).strip()
+
+
+@dataclass(frozen=True)
 class SnapPackage(Package, type='snapd'):
     packages: tuple[str, ...] = field(default_factory=tuple)
 
@@ -319,6 +353,7 @@ def load_packages(config: dict, platform: str) -> dict[str, list[Package]]:
     return {
         name: load_package_list(name, pkg_list, platform)
         for name, pkg_list in config.items()
+        if len(pkg_list) > 0
     }
 
 
