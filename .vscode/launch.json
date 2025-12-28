@@ -8,7 +8,7 @@
       "program": "${workspaceFolder}/src/installscript.py",
       "console": "integratedTerminal",
       "args": [
-        "${workspaceFolder}/tests/inputs/${input:file}.yml",
+        "${workspaceFolder}/${input:file}.yml",
         "--os",
         "${input:os}"
       ],
@@ -26,23 +26,23 @@
       "description": "Select the input YAML configuration file",
       "type": "pickString",
       "options": [
-        "../../../packages",
-        "01-package",
-        "02-package-default-name",
-        "03-package-type-only",
-        "04-pre-post_install",
-        "05-flags",
-        "06-depends_on",
-        "07-snapd",
-        "08-flatpak",
-        "09-tarball",
-        "10-github",
-        "11-file",
-        "12-pip",
-        "13-shell",
-        "14-zip"
+        "../linux-utils/packages",
+        "tests/inputs/01-package",
+        "tests/inputs/02-package-default-name",
+        "tests/inputs/03-package-type-only",
+        "tests/inputs/04-pre-post_install",
+        "tests/inputs/05-flags",
+        "tests/inputs/06-depends_on",
+        "tests/inputs/07-snapd",
+        "tests/inputs/08-flatpak",
+        "tests/inputs/09-tarball",
+        "tests/inputs/10-github",
+        "tests/inputs/11-file",
+        "tests/inputs/12-pip",
+        "tests/inputs/13-shell",
+        "tests/inputs/14-zip"
       ],
-      "default": "../../../packages",
+      "default": "../linux-utils/packages",
     }
   ]
 }
