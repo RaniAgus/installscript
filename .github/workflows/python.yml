@@ -1,0 +1,34 @@
+name: Lint and Test
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+  pull_request:
+
+  workflow_dispatch:
+
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install mypy types-PyYAML
+
+      - name: Run linter
+        run: mypy ./src/installscript.py
+
+      - name: Run tests
+        run: python3 ./tests/test_outputs.py
