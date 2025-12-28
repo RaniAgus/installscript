@@ -86,7 +86,7 @@ def sort_packages(packages: dict[str, list[Package]]) -> list[Package]:
         resolved
         for pkg_list in packages.values()
         for pkg in pkg_list
-        for resolved in [pkg.resolve(packages)]
+        for resolved in pkg.resolve(packages)
         if resolved not in seen and seen.add(resolved) is None # type: ignore[func-returns-value]
     ]
 
@@ -170,8 +170,8 @@ class Package(ABC):
     def print_package(self) -> str:
         pass
 
-    def resolve(self, all_packages: dict[str, list[Package]]) -> Package:
-        return self
+    def resolve(self, all_packages: dict[str, list[Package]]) -> list[Package]:
+        return [self]
 
 
 @dataclass(frozen=True)
@@ -556,8 +556,12 @@ class UndefinedPackage(Package):
     def print_package(self) -> str:
         return f"# TODO: Add installation command for package: {self.name}"
 
-    def resolve(self, all_packages: dict[str, list[Package]]) -> Package:
-        return all_packages.get(self.name, [])[-1] if self.name in all_packages else super().resolve(all_packages)
+    def resolve(self, all_packages: dict[str, list[Package]]) -> list[Package]:
+        return [
+            resolved
+            for pkg in all_packages.get(self.name, [])
+            for resolved in pkg.resolve(all_packages)
+        ] if self.name in all_packages else super().resolve(all_packages)
 
 
 ## Package Helpers ###
