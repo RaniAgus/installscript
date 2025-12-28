@@ -114,16 +114,13 @@ class Package(ABC):
 
         for cmd in self.pre_install:
             parts.append(cmd.print())
-            parts.append("\n")
 
         parts.append(self.print_package())
-        parts.append("\n")
 
         for cmd in self.post_install:
-            parts.append("\n")
             parts.append(cmd.print())
 
-        return "".join(parts)
+        return "\n\n".join(parts) + "\n"
 
     @abstractmethod
     def print_package(self) -> str:
@@ -561,7 +558,7 @@ class ShellCommand(Command, type='shell'):
         return ShellCommand(command=item['command'])
 
     def print(self) -> str:
-        return self.command
+        return self.command.strip()
 
 
 @dataclass(frozen=True)
@@ -583,8 +580,7 @@ class TeeCommand(Command, type='tee'):
     def print(self) -> str:
         sudo = "sudo " if self.sudo else ""
         append_flag = " -a" if self.append else ""
-        content = self.content.removesuffix('\n').replace('\n', '" "')
-        return f'printf "%s\\n" "{content}" | {sudo}tee{append_flag} {self.destination}\n'
+        return f"{sudo}tee{append_flag} {self.destination} <<'EOF'\n{self.content}EOF"
 
 
 ## Entry Point ###

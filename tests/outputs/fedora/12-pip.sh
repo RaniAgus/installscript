@@ -22,6 +22,16 @@ sudo dnf install -y python3-wheel zlib-devel
 
 pip install -U kazam
 
-printf "%s\n" "[Desktop Entry]" "Name=Kazam" "Comment=Screen recording tool" "Exec=kazam" "Icon=kazam" "Terminal=false" "Type=Application" "Categories=AudioVideo;Recorder;" "StartupNotify=true" | tee ~/.local/share/applications/kazam.desktop
+tee ~/.local/share/applications/kazam.desktop <<'EOF'
+[Desktop Entry]
+Name=Kazam
+Comment=Screen recording tool
+Exec=kazam
+Icon=kazam
+Terminal=false
+Type=Application
+Categories=AudioVideo;Recorder;
+StartupNotify=true
+EOF
 
 pip install -U yt-dlp[default]
