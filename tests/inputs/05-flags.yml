@@ -2,3 +2,7 @@ gh:
   - type: dnf
     repo: gh-cli
     repofile: https://cli.github.com/packages/rpm/gh-cli.repo
+
+gleam:
+  - type: dnf
+    copr: frostyx/gleam

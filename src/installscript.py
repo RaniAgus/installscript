@@ -152,6 +152,11 @@ class DnfPackage(Package, type='dnf'):
         if 'repo' in item:
             flags.append(f"--repo {item['repo']}")
 
+        if 'copr' in item:
+            pre_install.append(ShellCommand(
+                command=f"sudo dnf copr enable {item['copr']} -y\n"
+            ))
+
         return [
             *deps.values(),
             DnfPackage(
