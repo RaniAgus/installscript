@@ -25,7 +25,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: pip install mypy types-PyYAML
+        run: pip install pyyaml mypy types-PyYAML
 
       - name: Run linter
         run: mypy ./src/installscript.py
