@@ -326,7 +326,7 @@ class PipPackage(Package, type='pip'):
 
 
 @dataclass(frozen=True)
-class TarPackage(Package, type='tarball'):
+class TarPackage(Package, type='tar'):
     url: str = field(default="")
     sudo: bool = field(default=False)
     destination: str = field(default="")
@@ -356,6 +356,44 @@ class TarPackage(Package, type='tarball'):
 
     def print_package(self) -> str:
         return f"curl -fsSL \"{self.url}\" | {'sudo ' if self.sudo else ''}tar xzvC {self.destination}"
+
+
+@dataclass(frozen=True)
+class ZipPackage(Package, type='zip'):
+    url: str = field(default="")
+    sudo: bool = field(default=False)
+    destination: str = field(default="")
+
+    @classmethod
+    def create(cls, name: str, item: dict, platform: str) -> list[Package]:
+        url = item.get('url')
+        destination = item.get('destination')
+        sudo = item.get('sudo', False)
+
+        if not url or not destination:
+            return [UndefinedPackage(name=name)]
+
+        pre_install, post_install, deps = create_common_package_fields(name, item, platform)
+
+        return [
+            *deps.values(),
+            ZipPackage(
+                url=url,
+                destination=destination,
+                sudo=sudo,
+                pre_install=tuple(pre_install),
+                post_install=tuple(post_install),
+                dependencies=tuple(deps.keys()),
+            )
+        ]
+
+    def print_package(self) -> str:
+        lines = []
+        lines.append(f"TMP_FILE=$(mktemp)")
+        lines.append(f"curl -fsSL \"{self.url}\" -o $TMP_FILE")
+        lines.append(f"{'sudo ' if self.sudo else ''}unzip $TMP_FILE -d {self.destination}")
+        lines.append(f"rm $TMP_FILE")
+        return "\n".join(lines).strip()
 
 
 @dataclass(frozen=True)

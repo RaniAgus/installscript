@@ -1,0 +1,5 @@
+jetbrains-nf:
+  - type: zip
+    url: "https://github.com/ryanoasis/nerd-fonts/releases/download/v$(gh_latest_tag ryanoasis/nerd-fonts)/JetBrainsMono.zip"
+    destination: /usr/share/fonts/JetBrainsMonoNerdFont
+    sudo: true
