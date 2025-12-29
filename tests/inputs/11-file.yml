@@ -9,10 +9,10 @@ doctest:
 duckstation:
   - type: file
     url: https://github.com/stenzek/duckstation/releases/download/latest/DuckStation-x64.AppImage
-    destination: ~/.local/bin/DuckStation-x64.AppImage
+    destination: "$HOME/.local/bin/DuckStation-x64.AppImage"
     post_install:
       - type: tee
-        destination: ~/.local/share/applications/DuckStation-x64.desktop
+        destination: "$HOME/.local/share/applications/DuckStation-x64.desktop"
         content: |
           [Desktop Entry]
           Name=DuckStation

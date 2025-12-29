@@ -18,7 +18,7 @@ kazam:
         packages: [python3-wheel, zlib-devel]
     post_install:
       - type: tee
-        destination: ~/.local/share/applications/kazam.desktop
+        destination: "$HOME/.local/share/applications/kazam.desktop"
         content: |
           [Desktop Entry]
           Name=Kazam

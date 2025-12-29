@@ -18,7 +18,7 @@ sudo dnf install -y "cmake" "gcc" "gcc-c++" "make" "python3-pip" "python3-wheel"
 
 pip install -U "kazam" "yt-dlp[default]"
 
-tee "~/.local/share/applications/kazam.desktop" <<'EOF'
+tee "$HOME/.local/share/applications/kazam.desktop" <<'EOF'
 [Desktop Entry]
 Name=Kazam
 Comment=Screen recording tool

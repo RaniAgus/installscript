@@ -18,7 +18,7 @@ sudo apt-get install -y "build-essential" "python3-pip"
 
 pip install -U "kazam" "yt-dlp[default]"
 
-tee "~/.local/share/applications/kazam.desktop" <<'EOF'
+tee "$HOME/.local/share/applications/kazam.desktop" <<'EOF'
 [Desktop Entry]
 Name=Kazam
 Comment=Screen recording tool
