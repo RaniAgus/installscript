@@ -14,11 +14,11 @@
 
 set -e
 
-sudo dnf install -y cmake gcc gcc-c++ make python3-pip python3-wheel zlib-devel
+sudo dnf install -y "cmake" "gcc" "gcc-c++" "make" "python3-pip" "python3-wheel" "zlib-devel"
 
-pip install -U kazam yt-dlp[default]
+pip install -U "kazam" "yt-dlp[default]"
 
-tee ~/.local/share/applications/kazam.desktop <<'EOF'
+tee "~/.local/share/applications/kazam.desktop" <<'EOF'
 [Desktop Entry]
 Name=Kazam
 Comment=Screen recording tool

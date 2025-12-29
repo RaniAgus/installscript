@@ -14,10 +14,10 @@
 
 set -e
 
-sudo dnf install -y snapd
+sudo dnf install -y "snapd"
 
 sudo ln -s /var/lib/snapd/snap /snap
 
-sudo snap install code --classic
+sudo snap install "code" --classic
 
-sudo snap install postman spotify vlc
+sudo snap install "postman" "spotify" "vlc"

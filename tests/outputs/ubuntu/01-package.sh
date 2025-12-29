@@ -14,4 +14,4 @@
 
 set -e
 
-sudo apt-get install -y htop
+sudo apt-get install -y "htop"

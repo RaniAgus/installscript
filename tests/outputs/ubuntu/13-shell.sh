@@ -16,7 +16,7 @@ set -e
 
 bash -c "$(curl -fsSL "https://sh.rustup.rs")"
 
-sudo apt-get install -y zsh
+sudo apt-get install -y "zsh"
 
 sh -c "$(wget "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh" -O -)"
 chsh -s $(which zsh)

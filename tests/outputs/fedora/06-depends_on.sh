@@ -14,10 +14,10 @@
 
 set -e
 
-sudo dnf install -y dnf5-plugins kernel kernel-core kernel-devel kernel-headers kernel-modules kernel-modules-core kernel-modules-extra kernel-tools kernel-tools-libs
+sudo dnf install -y "dnf5-plugins" "kernel" "kernel-core" "kernel-devel" "kernel-headers" "kernel-modules" "kernel-modules-core" "kernel-modules-extra" "kernel-tools" "kernel-tools-libs"
 
 # TODO: Add installation command for package: dnf-automatic
 
 wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo rpm --import -
 
-sudo dnf install -y VirtualBox-7.2
+sudo dnf install -y "VirtualBox-7.2"

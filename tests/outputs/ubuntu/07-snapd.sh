@@ -14,8 +14,8 @@
 
 set -e
 
-sudo apt-get install -y snapd
+sudo apt-get install -y "snapd"
 
-sudo snap install code --classic
+sudo snap install "code" --classic
 
-sudo snap install postman spotify vlc
+sudo snap install "postman" "spotify" "vlc"

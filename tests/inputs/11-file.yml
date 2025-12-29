@@ -1,8 +1,10 @@
 doctest:
   - type: file
     url: https://raw.githubusercontent.com/doctest/doctest/v2.4.12/doctest/doctest.h
-    destination: /usr/local/include/doctest
+    destination: /usr/local/include/doctest/doctest.h
     sudo: true
+    pre_install: >
+      sudo mkdir -p /usr/local/include/doctest
 
 duckstation:
   - type: file

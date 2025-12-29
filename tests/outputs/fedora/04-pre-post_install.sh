@@ -16,9 +16,9 @@ set -e
 
 echo "Preparing to install htop dnf package..."
 
-sudo dnf install -y htop
+sudo dnf install -y "htop"
 
-sudo tee /tmp/htop_install.log <<'EOF'
+sudo tee "/tmp/htop_install.log" <<'EOF'
 htop installation complete.
 timestamp=$(date)
 EOF

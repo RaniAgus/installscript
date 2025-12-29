@@ -248,7 +248,19 @@ class DnfPackage(Package, type='dnf'):
         ]
 
     def print_package(self) -> str:
-        return f"sudo dnf install -y {' '.join(self.packages)} {' '.join(self.flags)}".strip()
+        parts = []
+        parts.append('sudo dnf install -y ')
+
+        for pkg in self.packages:
+            parts.append('"')
+            parts.append(pkg)
+            parts.append('" ')
+
+        for flag in self.flags:
+            parts.append(flag)
+            parts.append(" ")
+
+        return "".join(parts).strip()
 
     def apply_merge(self, other: 'DnfPackage') -> 'DnfPackage' | None:
         merged_packages = tuple(sorted(set(self.packages) | set(other.packages)))
@@ -285,7 +297,19 @@ class AptPackage(Package, type='apt'):
         ]
 
     def print_package(self) -> str:
-        return f"sudo apt-get install -y {' '.join(self.packages)} {' '.join(self.flags)}".strip()
+        parts = []
+        parts.append("sudo apt-get install -y ")
+
+        for pkg in self.packages:
+            parts.append('"')
+            parts.append(pkg)
+            parts.append('" ')
+
+        for flag in self.flags:
+            parts.append(flag)
+            parts.append(" ")
+
+        return "".join(parts).strip()
 
     def apply_merge(self, other: 'AptPackage') -> 'AptPackage' | None:
         merged_packages = tuple(sorted(set(self.packages) | set(other.packages)))
@@ -322,13 +346,23 @@ class DebPackage(Package, type='deb'):
         ]
 
     def print_package(self) -> str:
-        lines = []
+        parts = []
+
         for pkg in self.packages:
-            lines.append(f"TMP_FILE=$(mktemp)")
-            lines.append(f"wget -O $TMP_FILE {pkg}")
-            lines.append(f"sudo apt-get install -y $TMP_FILE {' '.join(self.flags)}")
-            lines.append(f"rm $TMP_FILE")
-        return "\n".join(lines).strip()
+            parts.append('TMP_FILE=$(mktemp)\n')
+            parts.append('wget -O "$TMP_FILE" "')
+            parts.append(pkg)
+            parts.append('"\n')
+            parts.append('sudo apt-get install -y "$TMP_FILE" ')
+
+            for flag in self.flags:
+                parts.append(flag)
+                parts.append(" ")
+
+            parts.append("\n")
+            parts.append('rm "$TMP_FILE"\n')
+
+        return "".join(parts).strip()
 
 
 @dataclass(frozen=True)
@@ -360,7 +394,19 @@ class SnapPackage(Package, type='snapd'):
         ]
 
     def print_package(self) -> str:
-        return f"sudo snap install {' '.join(self.packages)} {' '.join(self.flags)}".strip()
+        parts = []
+        parts.append("sudo snap install ")
+
+        for pkg in self.packages:
+            parts.append('"')
+            parts.append(pkg)
+            parts.append('" ')
+
+        for flag in self.flags:
+            parts.append(flag)
+            parts.append(" ")
+
+        return "".join(parts).strip()
 
     def apply_merge(self, other: 'SnapPackage') -> 'SnapPackage' | None:
         merged_packages = tuple(sorted(set(self.packages) | set(other.packages)))
@@ -406,7 +452,21 @@ class FlatpakPackage(Package, type='flatpak'):
         ]
 
     def print_package(self) -> str:
-        return f"flatpak install -y {self.remote} {' '.join(self.packages)} {' '.join(self.flags)}".strip()
+        parts = []
+        parts.append('flatpak install -y ')
+        parts.append(self.remote)
+        parts.append(' ')
+
+        for pkg in self.packages:
+            parts.append('"')
+            parts.append(pkg)
+            parts.append('" ')
+
+        for flag in self.flags:
+            parts.append(flag)
+            parts.append(" ")
+
+        return "".join(parts).strip()
 
     def apply_merge(self, other: 'FlatpakPackage') -> 'FlatpakPackage' | None:
         merged_packages = tuple(sorted(set(self.packages) | set(other.packages)))
@@ -447,7 +507,18 @@ class PipPackage(Package, type='pip'):
         ]
 
     def print_package(self) -> str:
-        return f"pip install -U {' '.join(self.packages)} {' '.join(self.flags)}".strip()
+        parts = []
+        parts.append("pip install -U ")
+        for pkg in self.packages:
+            parts.append('"')
+            parts.append(pkg)
+            parts.append('" ')
+
+        for flag in self.flags:
+            parts.append(flag)
+            parts.append(" ")
+
+        return "".join(parts).strip()
 
     def apply_merge(self, other: 'PipPackage') -> 'PipPackage' | None:
         merged_packages = tuple(sorted(set(self.packages) | set(other.packages)))
@@ -492,7 +563,19 @@ class TarPackage(Package, type='tar'):
         ]
 
     def print_package(self) -> str:
-        return f"curl -fsSL \"{self.url}\" | {'sudo ' if self.sudo else ''}tar xzvC {self.destination}"
+        parts = []
+        parts.append("curl -fsSL \"")
+        parts.append(self.url)
+        parts.append("\" | ")
+
+        if self.sudo:
+            parts.append("sudo ")
+
+        parts.append('tar xzvC "')
+        parts.append(self.destination)
+        parts.append('"')
+
+        return "".join(parts).strip()
 
 
 @dataclass(frozen=True)
@@ -527,11 +610,18 @@ class ZipPackage(Package, type='zip'):
 
     def print_package(self) -> str:
         lines = []
-        lines.append(f"TMP_FILE=$(mktemp)")
-        lines.append(f"curl -fsSL \"{self.url}\" -o $TMP_FILE")
-        lines.append(f"{'sudo ' if self.sudo else ''}unzip $TMP_FILE -d {self.destination}")
-        lines.append(f"rm $TMP_FILE")
-        return "\n".join(lines).strip()
+        lines.append('TMP_FILE=$(mktemp)\n')
+        lines.append('curl -fsSL "')
+        lines.append(self.url)
+        lines.append('" -o "$TMP_FILE"\n')
+        if self.sudo:
+            lines.append('sudo ')
+        lines.append('unzip "$TMP_FILE" -d "')
+        lines.append(self.destination)
+        lines.append('"\n')
+        lines.append('rm "$TMP_FILE"\n')
+
+        return "".join(lines).strip()
 
 
 @dataclass(frozen=True)
@@ -563,15 +653,22 @@ class GitHubPackage(Package, type='github'):
 
     def print_package(self) -> str:
         lines = []
-        lines.append(f"TMP_DIR=$(mktemp -d)")
-        lines.append(f"git clone https://github.com/{self.repository}.git $TMP_DIR")
-        lines.append(f"(")
-        lines.append(f"  cd $TMP_DIR")
+        lines.append('TMP_DIR=$(mktemp -d)\n')
+        lines.append('git clone https://github.com/')
+        lines.append(self.repository)
+        lines.append('.git "$TMP_DIR"\n')
+        lines.append('(\n')
+        lines.append('  cd "$TMP_DIR"\n')
+
         for line in self.install.splitlines():
-            lines.append(f"  {line}")
-        lines.append(f")")
-        lines.append(f"rm -rf $TMP_DIR")
-        return "\n".join(lines).strip()
+            lines.append('  ')
+            lines.append(line)
+            lines.append('\n')
+
+        lines.append(')\n')
+        lines.append('rm -rf "$TMP_DIR"\n')
+
+        return "".join(lines).strip()
 
 
 @dataclass(frozen=True)
@@ -605,8 +702,19 @@ class FilePackage(Package, type='file'):
         ]
 
     def print_package(self) -> str:
-        sudo = "sudo " if self.sudo else ""
-        return f"curl -fsSL \"{self.url}\" | {sudo}tee {self.destination}"
+        parts = []
+        parts.append('curl -fsSL "')
+        parts.append(self.url)
+        parts.append('" | ')
+
+        if self.sudo:
+            parts.append("sudo ")
+
+        parts.append('tee "')
+        parts.append(self.destination)
+        parts.append('"')
+
+        return "".join(parts).strip()
 
 
 @dataclass(frozen=True)
@@ -643,10 +751,20 @@ class ShellPackage(Package, type='shell'):
         ]
 
     def print_package(self) -> str:
-        if self.url:
-            return f"{self.shell} -c \"$(curl -fsSL \"{self.url}\")\""
+        parts = []
 
-        return f"{self.shell} <<'EOF'\n{self.script}EOF"
+        if self.url:
+            parts.append(self.shell)
+            parts.append(' -c "$(curl -fsSL "')
+            parts.append(self.url)
+            parts.append('")"')
+        else:
+            parts.append(self.shell)
+            parts.append(" <<'EOF'\n")
+            parts.append(self.script)
+            parts.append("EOF")
+
+        return "".join(parts).strip()
 
 
 @dataclass(frozen=True)
@@ -760,9 +878,24 @@ class TeeCommand(Command, type='tee'):
         )
 
     def print(self) -> str:
-        sudo = "sudo " if self.sudo else ""
-        append_flag = " -a" if self.append else ""
-        return f"{sudo}tee{append_flag} {self.destination} <<'EOF'\n{self.content}EOF"
+        parts = []
+
+        if self.sudo:
+            parts.append('sudo ')
+
+        parts.append('tee ')
+
+        if self.append:
+            parts.append('-a ')
+
+        parts.append('"')
+        parts.append(self.destination)
+        parts.append('"')
+        parts.append(" <<'EOF'\n")
+        parts.append(self.content)
+        parts.append("EOF")
+
+        return "".join(parts).strip()
 
 
 ## Entry Point ###

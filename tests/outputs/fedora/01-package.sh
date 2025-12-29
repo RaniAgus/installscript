@@ -14,4 +14,4 @@
 
 set -e
 
-sudo dnf install -y htop
+sudo dnf install -y "htop"

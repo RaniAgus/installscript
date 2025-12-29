@@ -14,4 +14,4 @@
 
 set -e
 
-flatpak install -y flathub com.discordapp.Discord com.github.jeromerobert.pdfarranger com.github.maoschanz.drawing com.obsproject.Studio net.pcsx2.PCSX2 org.kde.kdenlive
+flatpak install -y flathub "com.discordapp.Discord" "com.github.jeromerobert.pdfarranger" "com.github.maoschanz.drawing" "com.obsproject.Studio" "net.pcsx2.PCSX2" "org.kde.kdenlive"

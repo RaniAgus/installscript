@@ -15,6 +15,6 @@
 set -e
 
 TMP_FILE=$(mktemp)
-curl -fsSL "https://github.com/ryanoasis/nerd-fonts/releases/download/v$(gh_latest_tag ryanoasis/nerd-fonts)/JetBrainsMono.zip" -o $TMP_FILE
-sudo unzip $TMP_FILE -d /usr/share/fonts/JetBrainsMonoNerdFont
-rm $TMP_FILE
+curl -fsSL "https://github.com/ryanoasis/nerd-fonts/releases/download/v$(gh_latest_tag ryanoasis/nerd-fonts)/JetBrainsMono.zip" -o "$TMP_FILE"
+sudo unzip "$TMP_FILE" -d "/usr/share/fonts/JetBrainsMonoNerdFont"
+rm "$TMP_FILE"

@@ -14,8 +14,8 @@
 
 set -e
 
-sudo apt-get install -y flatpak
+sudo apt-get install -y "flatpak"
 
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-flatpak install -y flathub com.discordapp.Discord com.github.jeromerobert.pdfarranger com.github.maoschanz.drawing com.obsproject.Studio net.pcsx2.PCSX2 org.kde.kdenlive
+flatpak install -y flathub "com.discordapp.Discord" "com.github.jeromerobert.pdfarranger" "com.github.maoschanz.drawing" "com.obsproject.Studio" "net.pcsx2.PCSX2" "org.kde.kdenlive"
