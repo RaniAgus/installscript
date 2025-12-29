@@ -186,7 +186,7 @@ class Package(ABC, Generic[T]):
         return "\n\n".join(parts) + "\n"
 
     @abstractmethod
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         pass
 
     def resolve(self, all_packages: dict[str, list[Package]]) -> list[Package]:
