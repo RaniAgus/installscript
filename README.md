@@ -17,7 +17,7 @@ options:
   --out OUT    Output shell script file path (optional, defaults to stdout).
 ```
 
-> ![NOTE]
+> [!NOTE]
 > For now, only `fedora` is fully supported, but I plan to add support for
 > `ubuntu`, `popos` and `mint` in the future.
 
@@ -91,21 +91,23 @@ git:
     packages: [git]
 ```
 
-- When `packages` is not included, the package name is assumed to be the same as the key:
+> [!TIP]
+> When `packages` is not included, the package name is assumed to be the same as the key:
+>
+> ```yaml
+> git:
+>   - type: apt
+>   - type: dnf
+> ```
 
-```yaml
-git:
-  - type: apt
-  - type: dnf
-```
-
-- When declaring a simple string, it is expanded as the `type` property:
-
-```yaml
-git:
-  - apt
-  - dnf
-```
+> [!TIP]
+> When declaring a simple string, it is expanded as the `type` property:
+>
+> ```yaml
+> git:
+>   - apt
+>   - dnf
+> ```
 
 ### 2. Add dependencies between packages
 
@@ -133,8 +135,9 @@ pip:
         packages: [zsh]
 ```
 
-If dependency is not declared, installscript will output a TODO comment, so the
-user can manually add it to the configuration file later if needed.
+> [!WARNING]
+> If dependency is not declared, installscript will output a TODO comment, so
+> the user can manually add it to the configuration file later if needed.
 
 ### 3. Run commands before or after install
 
@@ -159,14 +162,15 @@ zsh:
           chsh -s "$(which zsh)" "$USER"
 ```
 
-- And it's the default in case we provide a simple string:
-
-```yaml
-zsh:
-  - type: apt
-    post_install: |
-      chsh -s "$(which zsh)" "$USER"
-```
+> [!TIP]
+> It's the default in case we provide a simple string:
+>
+> ```yaml
+> zsh:
+>   - type: apt
+>     post_install: |
+>       chsh -s "$(which zsh)" "$USER"
+> ```
 
 - Type `tee` writes content to a file, useful to add desktop entries or config files:
 
@@ -183,35 +187,37 @@ kazam:
           ...
 ```
 
-- By default, it overwrites the file, but if `append: true` is set, it appends
-  to the file so existing content is preserved:
+> [!TIP]
+> By default, it overwrites the file, but if `append: true` is set, it appends
+> to the file so existing content is preserved:
+>
+> ```yaml
+> zsh:
+>   - type: apt
+>     post_install:
+>       - type: tee
+>         destination: "$HOME/.zshrc"
+>         append: true
+>         content: |
+>           # pip
+>           export PATH="$HOME/.local/bin:$PATH"
+> ```
 
-```yaml
-zsh:
-  - type: apt
-    post_install:
-      - type: tee
-        destination: "$HOME/.zshrc"
-        append: true
-        content: |
-          # pip
-          export PATH="$HOME/.local/bin:$PATH"
-```
-
-- You can also specify `sudo: true` to write the file to a destination that
-  requires elevated permissions:
-
-```yaml
-dnf-automatic:
-  - type: dnf
-    post_install:
-      - type: tee
-        destination: /etc/dnf/automatic.conf
-        sudo: true
-        content: |
-          [commands]
-          apply_updates=True
-```
+> [!TIP]
+> You can also specify `sudo: true` to write the file to a destination that
+> requires elevated permissions:
+>
+> ```yaml
+> dnf-automatic:
+>   - type: dnf
+>     post_install:
+>       - type: tee
+>         destination: /etc/dnf/automatic.conf
+>         sudo: true
+>         content: |
+>           [commands]
+>           apply_updates=True
+> ```
 
 ### 4. Install from Flatpak, Snap, Pip, Tar, Zip, GitHub, File, or Shell
 
@@ -331,18 +337,19 @@ gleam:
       sudo dnf copr enable frostyx/gleam -y
 ```
 
-- For `dnf`, you can also specify `repo`, `repofile` and/or `copr` properties:
-
-```yaml
-gh:
-  - type: dnf
-    repo: gh-cli
-    repofile: https://cli.github.com/packages/rpm/gh-cli.repo
-
-gleam:
-  - type: dnf
-    copr: frostyx/gleam
-```
+> [!TIP]
+> For `dnf`, you can also specify `repo`, `repofile` and/or `copr` properties:
+>
+> ```yaml
+> gh:
+>   - type: dnf
+>     repo: gh-cli
+>     repofile: https://cli.github.com/packages/rpm/gh-cli.repo
+>
+> gleam:
+>   - type: dnf
+>     copr: frostyx/gleam
+> ```
 
 ### 6. Add desktop entries or config files
 
