@@ -178,7 +178,7 @@ class Package(ABC, Generic[T]):
         for cmd in self.pre_install:
             parts.append(cmd.print())
 
-        parts.append(self.print_package())
+        parts.append("".join(self.print_package()).strip())
 
         for cmd in self.post_install:
             parts.append(cmd.print())
@@ -247,7 +247,7 @@ class DnfPackage(Package, type='dnf'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         parts = []
         parts.append('sudo dnf install -y ')
 
@@ -260,7 +260,7 @@ class DnfPackage(Package, type='dnf'):
             parts.append(flag)
             parts.append(" ")
 
-        return "".join(parts).strip()
+        return parts
 
     def apply_merge(self, other: 'DnfPackage') -> 'DnfPackage' | None:
         merged_packages = tuple(sorted(set(self.packages) | set(other.packages)))
@@ -296,7 +296,7 @@ class AptPackage(Package, type='apt'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         parts = []
         parts.append("sudo apt-get install -y ")
 
@@ -309,7 +309,7 @@ class AptPackage(Package, type='apt'):
             parts.append(flag)
             parts.append(" ")
 
-        return "".join(parts).strip()
+        return parts
 
     def apply_merge(self, other: 'AptPackage') -> 'AptPackage' | None:
         merged_packages = tuple(sorted(set(self.packages) | set(other.packages)))
@@ -345,7 +345,7 @@ class DebPackage(Package, type='deb'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         parts = []
 
         for pkg in self.packages:
@@ -362,7 +362,7 @@ class DebPackage(Package, type='deb'):
             parts.append("\n")
             parts.append('rm "$TMP_FILE"\n')
 
-        return "".join(parts).strip()
+        return parts
 
 
 @dataclass(frozen=True)
@@ -393,7 +393,7 @@ class SnapPackage(Package, type='snapd'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         parts = []
         parts.append("sudo snap install ")
 
@@ -406,7 +406,7 @@ class SnapPackage(Package, type='snapd'):
             parts.append(flag)
             parts.append(" ")
 
-        return "".join(parts).strip()
+        return parts
 
     def apply_merge(self, other: 'SnapPackage') -> 'SnapPackage' | None:
         merged_packages = tuple(sorted(set(self.packages) | set(other.packages)))
@@ -451,7 +451,7 @@ class FlatpakPackage(Package, type='flatpak'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         parts = []
         parts.append('flatpak install -y ')
         parts.append(self.remote)
@@ -466,7 +466,7 @@ class FlatpakPackage(Package, type='flatpak'):
             parts.append(flag)
             parts.append(" ")
 
-        return "".join(parts).strip()
+        return parts
 
     def apply_merge(self, other: 'FlatpakPackage') -> 'FlatpakPackage' | None:
         merged_packages = tuple(sorted(set(self.packages) | set(other.packages)))
@@ -506,7 +506,7 @@ class PipPackage(Package, type='pip'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         parts = []
         parts.append("pip install -U ")
         for pkg in self.packages:
@@ -518,7 +518,7 @@ class PipPackage(Package, type='pip'):
             parts.append(flag)
             parts.append(" ")
 
-        return "".join(parts).strip()
+        return parts
 
     def apply_merge(self, other: 'PipPackage') -> 'PipPackage' | None:
         merged_packages = tuple(sorted(set(self.packages) | set(other.packages)))
@@ -562,7 +562,7 @@ class TarPackage(Package, type='tar'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         parts = []
         parts.append("curl -fsSL \"")
         parts.append(self.url)
@@ -575,7 +575,7 @@ class TarPackage(Package, type='tar'):
         parts.append(self.destination)
         parts.append('"')
 
-        return "".join(parts).strip()
+        return parts
 
 
 @dataclass(frozen=True)
@@ -608,7 +608,7 @@ class ZipPackage(Package, type='zip'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         lines = []
         lines.append('TMP_FILE=$(mktemp)\n')
         lines.append('curl -fsSL "')
@@ -621,7 +621,7 @@ class ZipPackage(Package, type='zip'):
         lines.append('"\n')
         lines.append('rm "$TMP_FILE"\n')
 
-        return "".join(lines).strip()
+        return lines
 
 
 @dataclass(frozen=True)
@@ -651,7 +651,7 @@ class GitHubPackage(Package, type='github'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         lines = []
         lines.append('TMP_DIR=$(mktemp -d)\n')
         lines.append('git clone https://github.com/')
@@ -668,7 +668,7 @@ class GitHubPackage(Package, type='github'):
         lines.append(')\n')
         lines.append('rm -rf "$TMP_DIR"\n')
 
-        return "".join(lines).strip()
+        return lines
 
 
 @dataclass(frozen=True)
@@ -701,7 +701,7 @@ class FilePackage(Package, type='file'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         parts = []
         parts.append('curl -fsSL "')
         parts.append(self.url)
@@ -714,7 +714,7 @@ class FilePackage(Package, type='file'):
         parts.append(self.destination)
         parts.append('"')
 
-        return "".join(parts).strip()
+        return parts
 
 
 @dataclass(frozen=True)
@@ -750,7 +750,7 @@ class ShellPackage(Package, type='shell'):
             )
         ]
 
-    def print_package(self) -> str:
+    def print_package(self) -> list[str]:
         parts = []
 
         if self.url:
@@ -766,7 +766,7 @@ class ShellPackage(Package, type='shell'):
         else:
             raise RuntimeError("ShellPackage requires either 'script' or 'url' field.")
 
-        return "".join(parts).strip()
+        return parts
 
 
 @dataclass(frozen=True)
@@ -777,8 +777,8 @@ class UndefinedPackage(Package):
     def create(cls, name: str, item: dict, platform: Platform) -> list[Package]:
         return [UndefinedPackage(name=name)]
 
-    def print_package(self) -> str:
-        return f"# TODO: Add installation command for package: {self.name}"
+    def print_package(self) -> list[str]:
+        return [f"# TODO: Add installation command for package: {self.name}"]
 
     def resolve(self, all_packages: dict[str, list[Package]]) -> list[Package]:
         return [
