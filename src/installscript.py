@@ -242,7 +242,7 @@ class DnfPackage(Package, type='dnf'):
         if 'repofile' in item:
             repo_file = item['repofile']
             pre_install.append(ShellCommand(
-                command=f"sudo dnf config-manager addrepo --from-repofile={repo_file}\n"
+                command=f"sudo dnf config-manager addrepo --from-repofile={repo_file} --overwrite\n"
             ))
 
         if 'repo' in item:
@@ -694,12 +694,16 @@ class FilePackage(Package, type='file'):
     url: str = field(default="")
     destination: str = field(default="")
     sudo: bool = field(default=False)
+    silent: bool = field(default=False)
+    executable: bool = field(default=False)
 
     @classmethod
     def create(cls, name: str, item: dict, platform: Platform) -> list[Package]:
         url = item.get('url')
         destination = item.get('destination')
         sudo = item.get('sudo', False)
+        silent = item.get('silent', False)
+        executable = item.get('executable', False)
 
         if not url or not destination:
             raise RuntimeError(f"FilePackage requires 'url' and 'destination' fields.")
@@ -713,6 +717,8 @@ class FilePackage(Package, type='file'):
                 url=url,
                 destination=destination,
                 sudo=sudo,
+                silent=silent,
+                executable=executable,
                 pre_install=tuple(pre_install),
                 post_install=tuple(post_install),
                 dependencies=tuple(deps.keys()),
@@ -731,6 +737,19 @@ class FilePackage(Package, type='file'):
         parts.append('tee "')
         parts.append(self.destination)
         parts.append('"')
+
+        if self.silent:
+            parts.append(' > /dev/null')
+
+        if self.executable:
+            parts.append('\n')
+
+            if self.sudo:
+                parts.append('sudo ')
+
+            parts.append('chmod +x "')
+            parts.append(self.destination)
+            parts.append('"')
 
         return parts
 

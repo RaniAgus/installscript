@@ -295,6 +295,8 @@ doctest:
     url: https://raw.githubusercontent.com/doctest/doctest/v2.4.12/doctest/doctest.h
     destination: /usr/local/include/doctest/doctest.h
     sudo: true # Optional: use sudo to write to destination
+    silent: true # Optional: suppress output after download
+    executable: false # Optional: make the file executable after download
 ```
 
 **Shell:**
@@ -412,7 +414,7 @@ docker:
         packages: [dnf5-plugins]
     post_install: |
       sudo systemctl enable --now docker
-      sudo groupadd docker
+      sudo groupadd -f docker
       sudo usermod -aG docker "$USER"
 ```
 
@@ -427,7 +429,7 @@ sudo dnf install -y dnf5-plugins docker docker-ce docker-ce-cli \
 sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
 
 sudo systemctl enable --now docker
-sudo groupadd docker
+sudo groupadd -f docker
 sudo usermod -aG docker "$USER"
 ```
 

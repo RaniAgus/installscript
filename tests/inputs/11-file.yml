@@ -10,6 +10,8 @@ duckstation:
   - type: file
     url: https://github.com/stenzek/duckstation/releases/download/latest/DuckStation-x64.AppImage
     destination: "$HOME/.local/bin/DuckStation-x64.AppImage"
+    silent: true
+    executable: true
     post_install:
       - type: tee
         destination: "$HOME/.local/share/applications/DuckStation-x64.desktop"
