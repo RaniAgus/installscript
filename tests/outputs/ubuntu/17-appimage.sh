@@ -21,8 +21,7 @@ mkdir -p "$HOME/.local/bin"
 curl -fsSL "https://github.com/stenzek/duckstation/releases/download/latest/DuckStation-x64.AppImage" -o "$HOME/.local/bin/DuckStation.AppImage" > /dev/null
 chmod +x "$HOME/.local/bin/DuckStation.AppImage"
 
-mkdir -p "$HOME/.local/share/applications"
-
+mkdir -p "$(dirname "$HOME/.local/share/applications/DuckStation.desktop)"
 tee "$HOME/.local/share/applications/DuckStation.desktop" <<'EOF'
 [Desktop Entry]
 Name=DuckStation

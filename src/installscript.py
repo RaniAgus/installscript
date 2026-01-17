@@ -863,19 +863,13 @@ class AppImagePackage(Package, type='appimage'):
         desktop_entry.append(f'Exec={destination}')
         desktop_entry.append('')
 
-        post_install_commands = [
-            # Create applications directory
-            Command.create({
-                'type': 'shell',
-                'command': 'mkdir -p "$HOME/.local/share/applications"'
-            }),
-            # Create desktop file
-            Command.create({
-                'type': 'tee',
-                'destination': f"$HOME/.local/share/applications/{app_name}.desktop",
-                'content': '\n'.join(desktop_entry),
-            })
-        ]
+        post_install.append(
+            TeeCommand(
+                '\n'.join(desktop_entry),
+                destination=f"$HOME/.local/share/applications/{app_name}.desktop",
+                mkdir=True,
+            )
+        )
 
         # Icon extraction if icon_name is provided
         if icon_name:
@@ -887,12 +881,11 @@ class AppImagePackage(Package, type='appimage'):
             post_install_command.append('  cp -rv squashfs-root/usr/share/icons/hicolor/* "$HOME/.local/share/icons/hicolor/" 2>/dev/null || true')
             post_install_command.append('  rm -rf "$TMP_DIR"')
             post_install_command.append(')')
-            post_install_commands.append(Command.create({
-                'type': 'shell',
-                'command': '\n'.join(post_install_command)
-            }))
 
-        post_install = post_install_commands + post_install
+            post_install.append(
+                ShellCommand(command='\n'.join(post_install_command))
+            )
+
 
         return [
             *(pkg for pkgs in deps.values() for pkg in pkgs),
@@ -1085,6 +1078,7 @@ class TeeCommand(Command, type='tee'):
     destination: str = field(default="")
     sudo: bool = field(default=False)
     append: bool = field(default=False)
+    mkdir: bool = field(default=False)
 
     @classmethod
     def create(cls, item: dict) -> Command:
@@ -1093,10 +1087,16 @@ class TeeCommand(Command, type='tee'):
             destination=item['destination'],
             sudo=item.get('sudo', False),
             append=item.get('append', False),
+            mkdir=item.get('mkdir', False)
         )
 
     def print(self) -> str:
         parts = []
+
+        if self.mkdir:
+            parts.append('mkdir -p "$(dirname "')
+            parts.append(self.destination)
+            parts.append(')"\n')
 
         if self.sudo:
             parts.append('sudo ')
