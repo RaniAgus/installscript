@@ -1,0 +1,18 @@
+appimage:
+  - type: dnf
+    packages: [fuse, fuse-libs]
+    post_install: |
+      mkdir -p "$HOME/.local/bin"
+  - type: apt
+    packages: [fuse, libfuse2]
+    post_install: |
+      mkdir -p "$HOME/.local/bin"
+
+duckstation:
+  - type: appimage
+    url: https://github.com/stenzek/duckstation/releases/download/latest/DuckStation-x64.AppImage
+    name: DuckStation
+    icon_name: org.duckstation.DuckStation
+    categories:
+      - Game
+      - Emulator

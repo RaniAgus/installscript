@@ -826,6 +826,106 @@ class FilePackage(Package, type='file'):
 
 
 @dataclass(frozen=True)
+class AppImagePackage(Package, type='appimage'):
+    url: str = field(default="")
+    name: str = field(default="")
+    icon_name: str = field(default="")
+
+    @classmethod
+    def create(cls, name: str, item: dict, platform: Platform) -> list[Package]:
+        url = item.get('url')
+        icon_name = item.get('icon_name')
+
+        if not url:
+            raise RuntimeError(f"AppImagePackage requires 'url' field.")
+        if not icon_name:
+            raise RuntimeError(f"AppImagePackage requires 'icon_name' field.")
+
+        # Add dependency on appimage setup
+        pre_install, post_install, deps = create_common_package_fields(name, item, platform)
+
+        if not platform.preinstalls('appimage'):
+            deps['appimage'] = [UndefinedPackage(name='appimage')]
+
+        # Set up post_install commands for desktop integration
+        app_name = item.get('name', name)
+        destination = f"$HOME/.local/bin/{app_name}.AppImage"
+
+        # Desktop file creation
+        desktop_entry = []
+        desktop_entry.append('[Desktop Entry]')
+        desktop_entry.append(f'Name={app_name}')
+        desktop_entry.append('StartupNotify=true')
+        desktop_entry.append('Type=Application')
+        desktop_entry.append('Terminal=false')
+        desktop_entry.append(f'Categories={";".join(item.get('categories', 'Application'))};')
+        desktop_entry.append(f'Icon={icon_name}')
+        desktop_entry.append(f'Exec={destination}')
+        desktop_entry.append('')
+
+        post_install_commands = [
+            # Create applications directory
+            Command.create({
+                'type': 'shell',
+                'command': 'mkdir -p "$HOME/.local/share/applications"'
+            }),
+            # Create desktop file
+            Command.create({
+                'type': 'tee',
+                'destination': f"$HOME/.local/share/applications/{app_name}.desktop",
+                'content': '\n'.join(desktop_entry),
+            })
+        ]
+
+        # Icon extraction if icon_name is provided
+        if icon_name:
+            post_install_command = []
+            post_install_command.append('(')
+            post_install_command.append('  TMP_DIR=$(mktemp -d)')
+            post_install_command.append('  cd "$TMP_DIR" || exit')
+            post_install_command.append(f'  "{destination}" --appimage-extract')
+            post_install_command.append('  cp -rv squashfs-root/usr/share/icons/hicolor/* "$HOME/.local/share/icons/hicolor/" 2>/dev/null || true')
+            post_install_command.append('  rm -rf "$TMP_DIR"')
+            post_install_command.append(')')
+            post_install_commands.append(Command.create({
+                'type': 'shell',
+                'command': '\n'.join(post_install_command)
+            }))
+
+        post_install = post_install_commands + post_install
+
+        return [
+            *(pkg for pkgs in deps.values() for pkg in pkgs),
+            AppImagePackage(
+                satisfies=(name,),
+                url=url,
+                name=app_name,
+                pre_install=tuple(pre_install),
+                post_install=tuple(post_install),
+                dependencies=tuple(deps.keys()),
+            )
+        ]
+
+    def print_package(self) -> list[str]:
+        parts = []
+        destination = f"$HOME/.local/bin/{self.name}.AppImage"
+
+        # Download AppImage
+        parts.append('curl -fsSL "')
+        parts.append(self.url)
+        parts.append('" -o "')
+        parts.append(destination)
+        parts.append('" > /dev/null\n')
+
+        # Make executable
+        parts.append('chmod +x "')
+        parts.append(destination)
+        parts.append('"\n')
+
+        return parts
+
+
+@dataclass(frozen=True)
 class ShellPackage(Package, type='shell'):
     shell: str = field(default="bash")
     script: str | None = field(default=None)
