@@ -1,12 +1,8 @@
 appimage:
   - type: dnf
     packages: [fuse, fuse-libs]
-    post_install: |
-      mkdir -p "$HOME/.local/bin"
   - type: apt
     packages: [fuse, libfuse2]
-    post_install: |
-      mkdir -p "$HOME/.local/bin"
 
 duckstation:
   - type: appimage

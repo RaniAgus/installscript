@@ -838,8 +838,6 @@ class AppImagePackage(Package, type='appimage'):
 
         if not url:
             raise RuntimeError(f"AppImagePackage requires 'url' field.")
-        if not icon_name:
-            raise RuntimeError(f"AppImagePackage requires 'icon_name' field.")
 
         # Add dependency on appimage setup
         pre_install, post_install, deps = create_common_package_fields(name, item, platform)
@@ -859,7 +857,8 @@ class AppImagePackage(Package, type='appimage'):
         desktop_entry.append('Type=Application')
         desktop_entry.append('Terminal=false')
         desktop_entry.append(f'Categories={";".join(item.get('categories', 'Application'))};')
-        desktop_entry.append(f'Icon={icon_name}')
+        if icon_name:
+            desktop_entry.append(f'Icon={icon_name}')
         desktop_entry.append(f'Exec={destination}')
         desktop_entry.append('')
 
@@ -873,17 +872,17 @@ class AppImagePackage(Package, type='appimage'):
 
         # Icon extraction if icon_name is provided
         if icon_name:
-            post_install_command = []
-            post_install_command.append('(')
-            post_install_command.append('  TMP_DIR=$(mktemp -d)')
-            post_install_command.append('  cd "$TMP_DIR" || exit')
-            post_install_command.append(f'  "{destination}" --appimage-extract')
-            post_install_command.append('  cp -rv squashfs-root/usr/share/icons/hicolor/* "$HOME/.local/share/icons/hicolor/" 2>/dev/null || true')
-            post_install_command.append('  rm -rf "$TMP_DIR"')
-            post_install_command.append(')')
+            extract_icons = []
+            extract_icons.append('(')
+            extract_icons.append('  TMP_DIR=$(mktemp -d)')
+            extract_icons.append('  cd "$TMP_DIR" || exit')
+            extract_icons.append(f'  "{destination}" --appimage-extract')
+            extract_icons.append('  cp -rv squashfs-root/usr/share/icons/hicolor/* "$HOME/.local/share/icons/hicolor/" 2>/dev/null || true')
+            extract_icons.append('  rm -rf "$TMP_DIR"')
+            extract_icons.append(')')
 
             post_install.append(
-                ShellCommand(command='\n'.join(post_install_command))
+                ShellCommand(command='\n'.join(extract_icons))
             )
 
 
@@ -902,6 +901,10 @@ class AppImagePackage(Package, type='appimage'):
     def print_package(self) -> list[str]:
         parts = []
         destination = f"$HOME/.local/bin/{self.name}.AppImage"
+
+        parts.append('mkdir -p "$(dirname "')
+        parts.append(destination)
+        parts.append('")"\n')
 
         # Download AppImage
         parts.append('curl -fsSL "')

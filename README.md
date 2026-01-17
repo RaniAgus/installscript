@@ -219,7 +219,25 @@ kazam:
 >           apply_updates=True
 > ```
 
-### 4. Install from Flatpak, Snap, Pip, Tar, Zip, GitHub, File, or Shell
+> [!TIP]
+> You can specify `mkdir: true` to create the destination directory before writing
+> the file:
+>
+> ```yaml
+> kazam:
+>   - type: pip
+>     post_install:
+>       - type: tee
+>         destination: "$HOME/.local/share/applications/kazam.desktop"
+>         mkdir: true
+>         content: |
+>           [Desktop Entry]
+>           Name=Kazam
+>           Exec=kazam
+>           ...
+> ```
+
+### 4. Install from Flatpak, Snap, Pip, Tar, Zip, GitHub, File, Shell, or AppImage
 
 For these types, if specified `--os` does not include the required command, it
 will be included as a dependency, as if we declared it in `depends_on` as
@@ -320,7 +338,27 @@ oh-my-zsh:
       sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     shell: zsh # Optional: specify the shell to use (default: bash).
                # Will be added as a dependency if not preinstalled in the target OS.
+
+**AppImage:**
+
+```yaml
+duckstation:
+  - type: appimage
+    url: https://github.com/stenzek/duckstation/releases/download/latest/DuckStation-x64.AppImage
+    name: DuckStation
+    icon_name: org.duckstation.DuckStation
+    categories:
+      - Game
+      - Emulator
 ```
+
+AppImages are downloaded to `$HOME/.local/bin/`, a desktop entry is created in
+`$HOME/.local/share/applications/`, and icons are extracted automatically when `icon_name` is specified.
+
+> [!NOTE]
+> AppImage packages require the `url` field. The `name`, `icon_name`, and `categories` fields are optional.
+> The `name` field defaults to the package name, `icon_name` enables desktop icon extraction when provided,
+> and `categories` defaults to "Application".
 
 ### 5. Use custom flags for package managers
 
