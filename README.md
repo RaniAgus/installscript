@@ -338,6 +338,7 @@ oh-my-zsh:
       sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     shell: zsh # Optional: specify the shell to use (default: bash).
                # Will be added as a dependency if not preinstalled in the target OS.
+```
 
 **AppImage:**
 
